@@ -1,28 +1,50 @@
-﻿#include "PipeServer.h"
+﻿#include "pch.h"
+#include "PipeServer.h"
 
 PipeServer::PipeServer(const std::string& pipeName)
-    : m_pipeName("\\\\.\\pipe\\" + pipeName)
+    : m_pipePath("\\\\.\\pipe\\" + pipeName)
 {
     m_hStopEvent = CreateEventA(NULL, TRUE, FALSE, NULL);
+    if (m_hStopEvent == NULL)
+    {
+        throw std::runtime_error("创建停止事件失败");
+    }
 }
 
 PipeServer::~PipeServer()
 {
     Stop();
-    CloseHandle(m_hStopEvent);
+    if (m_hStopEvent != NULL)
+    {
+        CloseHandle(m_hStopEvent);
+        m_hStopEvent = NULL;
+    }
+}
+
+void PipeServer::SetModelClient(std::unique_ptr<ModelClient> client)
+{
+    m_modelClient = std::move(client);
 }
 
 void PipeServer::Start()
 {
+    if (m_serverThread && m_serverThread->joinable())
+        return;
+
     m_serverThread = std::make_unique<std::thread>(&PipeServer::ServerThread, this);
 }
 
 void PipeServer::Stop()
 {
-    SetEvent(m_hStopEvent);
+    if (m_hStopEvent != NULL)
+    {
+        SetEvent(m_hStopEvent);
+    }
+
     if (m_serverThread && m_serverThread->joinable())
     {
         m_serverThread->join();
+        m_serverThread.reset();
     }
 }
 
@@ -31,7 +53,7 @@ void PipeServer::ServerThread()
     while (WaitForSingleObject(m_hStopEvent, 0) != WAIT_OBJECT_0)
     {
         HANDLE hPipe = CreateNamedPipeA(
-            m_pipeName.c_str(),
+            m_pipePath.c_str(),
             PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
             PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
             PIPE_UNLIMITED_INSTANCES,
@@ -50,7 +72,10 @@ void PipeServer::ServerThread()
         OVERLAPPED overlapped = { 0 };
         overlapped.hEvent = CreateEventA(NULL, TRUE, FALSE, NULL);
 
-        if (ConnectNamedPipe(hPipe, &overlapped) == FALSE && GetLastError() != ERROR_IO_PENDING)
+        BOOL connectResult = ConnectNamedPipe(hPipe, &overlapped);
+        DWORD lastError = GetLastError();
+
+        if (!connectResult && lastError != ERROR_IO_PENDING)
         {
             CloseHandle(hPipe);
             CloseHandle(overlapped.hEvent);
@@ -73,13 +98,21 @@ void PipeServer::ServerThread()
             std::thread clientThread(&PipeServer::HandleClient, this, hPipe);
             clientThread.detach();
         }
+        else
+        {
+            CloseHandle(hPipe);
+            CloseHandle(overlapped.hEvent);
+        }
     }
 }
 
 void PipeServer::HandleClient(HANDLE hPipe)
 {
-    char buffer[65536];
-    DWORD bytesRead;
+    if (hPipe == INVALID_HANDLE_VALUE)
+        return;
+
+    char buffer[65536] = { 0 };
+    DWORD bytesRead = 0;
 
     if (!ReadFile(hPipe, buffer, sizeof(buffer) - 1, &bytesRead, NULL))
     {
@@ -92,7 +125,7 @@ void PipeServer::HandleClient(HANDLE hPipe)
 
     try
     {
-        json j = json::parse(request);
+        nlohmann_json j = nlohmann_json::parse(request);
         std::string type = j["type"];
 
         if (type == "generate_stream" && m_modelClient)
@@ -101,26 +134,26 @@ void PipeServer::HandleClient(HANDLE hPipe)
 
             m_modelClient->GenerateStreamAsync(prompt, [hPipe](const std::string& chunk)
                 {
-                    DWORD bytesWritten;
-                    WriteFile(hPipe, chunk.c_str(), chunk.length(), &bytesWritten, NULL);
-                }).wait();
+                    if (chunk.empty()) return;
 
-            const char* endMarker = "[END]";
-            WriteFile(hPipe, endMarker, strlen(endMarker), &bytesRead, NULL);
+                    DWORD bytesWritten = 0;
+                    WriteFile(hPipe, chunk.c_str(), chunk.length(), &bytesWritten, NULL);
+                });
         }
         else if (type == "generate" && m_modelClient)
         {
             std::string prompt = j["prompt"];
-            std::string result = m_modelClient->GenerateAsync(prompt).get();
+            std::string result = m_modelClient->GenerateSync(prompt);
 
-            DWORD bytesWritten;
+            DWORD bytesWritten = 0;
             WriteFile(hPipe, result.c_str(), result.length(), &bytesWritten, NULL);
         }
     }
-    catch (...)
+    catch (const std::exception& e)
     {
-        const char* error = "错误：请求处理失败";
-        WriteFile(hPipe, error, strlen(error), &bytesRead, NULL);
+        std::string error = "错误: " + std::string(e.what());
+        DWORD bytesWritten = 0;
+        WriteFile(hPipe, error.c_str(), error.length(), &bytesWritten, NULL);
     }
 
     FlushFileBuffers(hPipe);

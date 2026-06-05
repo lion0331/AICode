@@ -1,16 +1,22 @@
 ﻿#pragma once
+
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <wininet.h>
+
+// 标准库
 #include <string>
 #include <vector>
 #include <memory>
 #include <functional>
 #include <thread>
+#include <mutex>
 #include <sstream>
-#include <cpprest/http_client.h>
-#include <cpprest/json.h>
-#include <nlohmann/json.hpp>
+#include <stdexcept>
+#include <iostream>
 
-using json = nlohmann::json;
-using namespace web;
-using namespace web::http;
-using namespace web::http::client;
+// 第三方库
+#include <nlohmann/json.hpp>
+using nlohmann_json = nlohmann::json;
+
+#pragma comment(lib, "wininet.lib")

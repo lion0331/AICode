@@ -13,79 +13,10 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="cpprest">
-      <UniqueIdentifier>{4fdb3fe3-61e9-4e87-9eb0-0dd49fa0e234}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\astreambuf.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\asyncrt_utils.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\base_uri.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\containerstream.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\filestream.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\http_client.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\http_compression.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\http_headers.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\http_listener.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\http_msg.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\interopstream.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\json.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\oauth1.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\oauth2.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\producerconsumerstream.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\rawptrstream.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\streams.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\uri.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\uri_builder.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\version.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\ws_client.h">
-      <Filter>cpprest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\ws_msg.h">
-      <Filter>cpprest</Filter>
     </ClInclude>
     <ClInclude Include="ModelClient.h">
       <Filter>头文件</Filter>
@@ -93,7 +24,7 @@
     <ClInclude Include="PipeServer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="AICodetCore.h">
+    <ClInclude Include="AICodeCore.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -107,7 +38,7 @@
     <ClCompile Include="PipeServer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="AICodetCore.cpp">
+    <ClCompile Include="AICodeCore.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

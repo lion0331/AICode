@@ -80,12 +80,13 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <AdditionalIncludeDirectories>E:\Source\AICode\packages\nlohmann.json.3.12.0\build\native\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>E:\Source\AICode\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
@@ -103,12 +104,13 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <AdditionalIncludeDirectories>E:\Source\AICode\packages\nlohmann.json.3.12.0\build\native\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>E:\Source\AICode\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
@@ -124,12 +126,13 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <AdditionalIncludeDirectories>E:\Source\AICode\packages\nlohmann.json.3.12.0\build\native\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>E:\Source\AICode\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
@@ -147,47 +150,26 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <AdditionalIncludeDirectories>E:\Source\AICode\packages\nlohmann.json.3.12.0\build\native\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>E:\Source\AICode\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\astreambuf.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\asyncrt_utils.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\base_uri.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\containerstream.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\filestream.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\http_client.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\http_compression.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\http_headers.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\http_listener.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\http_msg.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\interopstream.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\json.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\oauth1.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\oauth2.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\producerconsumerstream.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\rawptrstream.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\streams.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\uri.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\uri_builder.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\version.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\ws_client.h" />
-    <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\ws_msg.h" />
-    <ClInclude Include="AICodetCore.h" />
+    <ClInclude Include="AICodeCore.h" />
     <ClInclude Include="ModelClient.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PipeServer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AICodetCore.cpp" />
+    <ClCompile Include="AICodeCore.cpp" />
     <ClCompile Include="ModelClient.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -202,14 +184,12 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\cpprestsdk.v142.2.10.15\build\native\cpprestsdk.v142.targets" Condition="Exists('..\packages\cpprestsdk.v142.2.10.15\build\native\cpprestsdk.v142.targets')" />
     <Import Project="..\packages\nlohmann.json.3.12.0\build\native\nlohmann.json.targets" Condition="Exists('..\packages\nlohmann.json.3.12.0\build\native\nlohmann.json.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>这台计算机上缺少此项目引用的 NuGet 程序包。使用“NuGet 程序包还原”可下载这些程序包。有关更多信息，请参见 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的文件是 {0}。</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\cpprestsdk.v142.2.10.15\build\native\cpprestsdk.v142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\cpprestsdk.v142.2.10.15\build\native\cpprestsdk.v142.targets'))" />
     <Error Condition="!Exists('..\packages\nlohmann.json.3.12.0\build\native\nlohmann.json.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\nlohmann.json.3.12.0\build\native\nlohmann.json.targets'))" />
   </Target>
 </Project>
