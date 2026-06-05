@@ -1,65 +1,50 @@
 ﻿using AICode.Services;
-using AICodeAssistant.Services;
-using Microsoft.VisualStudio.Extensibility;
-using Microsoft.VisualStudio.Extensibility.Commands;
-using System.Reflection.Metadata;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using System;
+using System.ComponentModel.Design;
+using System.IO.Packaging;
 
-namespace AICodeAssistant.Commands;
-
-[CommandIcon("Icon", IconSettings.IconAndText)]
-public class GenerateCodeCommand : Command
+namespace AICode.Vsix
 {
-    private readonly ICoreService _coreService;
-    private readonly IExtensibility _extensibility;
-
-    public GenerateCodeCommand(ICoreService coreService, IExtensibility extensibility)
+    internal sealed class GenerateCodeCommand
     {
-        _coreService = coreService;
-        _extensibility = extensibility;
-    }
+        private readonly Package _package;
+        public const int CommandId = 0x0200;
+        public static readonly Guid CommandSet = new Guid(AICodePackage.PackageGuidString);
 
-    public override async Task ExecuteCommandAsync(IClientContext context, CancellationToken cancellationToken)
-    {
-        var document = await _extensibility.Documents().GetActiveDocumentAsync(cancellationToken);
-        if (document == null)
-            return;
-
-        var selection = await document.GetSelectionAsync(cancellationToken);
-        var selectedText = await selection.GetTextAsync(cancellationToken);
-
-        string prompt;
-        if (string.IsNullOrEmpty(selectedText))
+        private GenerateCodeCommand(Package package)
         {
-            prompt = "请在当前光标位置生成合适的代码";
-        }
-        else
-        {
-            prompt = $"请根据以下注释生成代码：\n{selectedText}";
+            _package = package ?? throw new ArgumentNullException(nameof(package));
+            if (package.GetService(typeof(IMenuCommandService)) is OleMenuCommandService commandService)
+            {
+                var menuCommandID = new CommandID(CommandSet, CommandId);
+                var menuItem = new MenuCommand(Execute, menuCommandID);
+                commandService.AddCommand(menuItem);
+            }
         }
 
-        var contextText = await GetCurrentCodeContextAsync(document, cancellationToken);
-        var fullPrompt = $"当前代码上下文：\n{contextText}\n\n用户请求：{prompt}\n\n只输出代码，不要任何解释。";
+        public static GenerateCodeCommand Instance { get; private set; }
 
-        var generatedCode = await _coreService.GenerateAsync(fullPrompt, cancellationToken);
-
-        var editPoint = await selection.CreateEditPointAsync(cancellationToken);
-        if (!string.IsNullOrEmpty(selectedText))
+        public static async System.Threading.Tasks.Task InitializeAsync(Package package)
         {
-            await selection.DeleteAsync(cancellationToken);
+            await System.Threading.Tasks.Task.Run(() => Instance = new GenerateCodeCommand(package));
         }
-        await editPoint.InsertAsync(generatedCode, cancellationToken);
-    }
 
-    private async Task<string> GetCurrentCodeContextAsync(Document document, CancellationToken cancellationToken)
-    {
-        var textDocument = await document.GetTextDocumentAsync(cancellationToken);
-        var text = await textDocument.GetTextAsync(cancellationToken);
-        var cursorPosition = await document.GetCursorPositionAsync(cancellationToken);
+        private void Execute(object sender, EventArgs e)
+        {
+            // 代码生成逻辑（示例：弹出提示）
+            var uiShell = _package.GetService(typeof(SVsUIShell)) as IVsUIShell;
+            var clsid = Guid.Empty;
+            int result;
+            uiShell.ShowMessageBox(
+                0, ref clsid, "AICode", "开始生成AI代码...", string.Empty,
+                0, OLEMSGBUTTON.OLEMSGBUTTON_OK, OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST,
+                OLEMSGICON.OLEMSGICON_INFO, 0, out result);
 
-        var lines = text.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-        var startLine = Math.Max(0, cursorPosition.Line - 50);
-        var endLine = Math.Min(lines.Length, cursorPosition.Line + 20);
-
-        return string.Join(Environment.NewLine, lines.Skip(startLine).Take(endLine - startLine));
+            // 调用CoreService生成代码
+            var coreService = new CoreService();
+            coreService.GenerateCode();
+        }
     }
 }
