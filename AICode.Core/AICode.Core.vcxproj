@@ -182,14 +182,12 @@
     <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\ws_client.h" />
     <ClInclude Include="..\packages\cpprestsdk.v142.2.10.15\build\native\include\cpprest\ws_msg.h" />
     <ClInclude Include="AICodetCore.h" />
-    <ClInclude Include="framework.h" />
     <ClInclude Include="ModelClient.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PipeServer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AICodetCore.cpp" />
-    <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ModelClient.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
