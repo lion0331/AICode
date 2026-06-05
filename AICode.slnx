@@ -1,0 +1,11 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="AICode.Core/AICode.Core.vcxproj" Id="2d236f0f-3546-46d1-8b4f-33f1e272b65c" />
+  <Project Path="AICode.Vsix/AICode.Vsix.csproj" Id="64333fbf-9ff9-41dc-a4ca-cdf9ea09d4f2">
+    <BuildDependency Project="AICode.Core/AICode.Core.vcxproj" />
+  </Project>
+</Solution>
