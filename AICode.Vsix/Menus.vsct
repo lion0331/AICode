@@ -1,80 +1,83 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <Extern href="stdidcmd.h"/>
-  <Extern href="vsshlids.h"/>
+	<Extern href="stdidcmd.h"/>
+	<Extern href="vsshlids.h"/>
 
-  <Commands package="guidAICodePackage">
-    <Groups>
-      <Group guid="guidAICodePackageCmdSet" id="AICodeMenuGroup" priority="0x0600">
-        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS"/>
-      </Group>
-      <Group guid="guidAICodePackageCmdSet" id="AICodeEditorContextMenuGroup" priority="0x0600">
-        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN"/>
-      </Group>
-    </Groups>
+	<Commands package="guidAICodePackage">
+		<Groups>
+			<Group guid="guidAICodePackageCmdSet" id="AICodeMenuGroup" priority="0x0600">
+				<Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS"/>
+			</Group>
+			<Group guid="guidAICodePackageCmdSet" id="AICodeEditorContextMenuGroup" priority="0x0600">
+				<Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN"/>
+			</Group>
+		</Groups>
 
-    <Menus>
-      <Menu guid="guidAICodePackageCmdSet" id="AICodeMenu" priority="0x0100" type="Menu">
-        <Parent guid="guidAICodePackageCmdSet" id="AICodeMenuGroup"/>
-        <Strings>
-          <ButtonText>AICode Assistant</ButtonText>
-          <CommandName>AICode Assistant</CommandName>
-        </Strings>
-      </Menu>
-    </Menus>
+		<Menus>
+			<Menu guid="guidAICodePackageCmdSet" id="AICodeMenu" priority="0x0100" type="Menu">
+				<Parent guid="guidAICodePackageCmdSet" id="AICodeMenuGroup"/>
+				<Strings>
+					<ButtonText>AICode Assistant</ButtonText>
+					<CommandName>AICode Assistant</CommandName>
+				</Strings>
+			</Menu>
+		</Menus>
 
-    <Buttons>
-      <Button guid="guidAICodePackageCmdSet" id="ShowToolWindowCommandId" priority="0x0100" type="Button">
-        <Parent guid="guidAICodePackageCmdSet" id="AICodeMenu"/>
-        <Strings>
-          <ButtonText>显示工具窗口</ButtonText>
-        </Strings>
-      </Button>
-      <Button guid="guidAICodePackageCmdSet" id="SettingsCommandId" priority="0x0200" type="Button">
-        <Parent guid="guidAICodePackageCmdSet" id="AICodeMenu"/>
-        <Strings>
-          <ButtonText>设置</ButtonText>
-        </Strings>
-      </Button>
-      <Button guid="guidAICodePackageCmdSet" id="GenerateCodeCommandId" priority="0x0100" type="Button">
-        <Parent guid="guidAICodePackageCmdSet" id="AICodeEditorContextMenuGroup"/>
-        <Strings>
-          <ButtonText>AI生成代码</ButtonText>
-        </Strings>
-      </Button>
-      <Button guid="guidAICodePackageCmdSet" id="RefactorCodeCommandId" priority="0x0200" type="Button">
-        <Parent guid="guidAICodePackageCmdSet" id="AICodeEditorContextMenuGroup"/>
-        <Strings>
-          <ButtonText>AI重构代码</ButtonText>
-        </Strings>
-      </Button>
-      <Button guid="guidAICodePackageCmdSet" id="ExplainCodeCommandId" priority="0x0300" type="Button">
-        <Parent guid="guidAICodePackageCmdSet" id="AICodeEditorContextMenuGroup"/>
-        <Strings>
-          <ButtonText>AI解释代码</ButtonText>
-        </Strings>
-      </Button>
-      <Button guid="guidAICodePackageCmdSet" id="FindIssuesCommandId" priority="0x0400" type="Button">
-        <Parent guid="guidAICodePackageCmdSet" id="AICodeEditorContextMenuGroup"/>
-        <Strings>
-          <ButtonText>AI查找代码问题</ButtonText>
-        </Strings>
-      </Button>
-    </Buttons>
-  </Commands>
+		<Buttons>
+			<Button guid="guidAICodePackageCmdSet" id="ShowToolWindowCommandId" priority="0x0100" type="Button">
+				<Parent guid="guidAICodePackageCmdSet" id="AICodeMenu"/>
+				<Strings>
+					<ButtonText>显示工具窗口</ButtonText>
+				</Strings>
+			</Button>
+			<Button guid="guidAICodePackageCmdSet" id="SettingsCommandId" priority="0x0200" type="Button">
+				<Parent guid="guidAICodePackageCmdSet" id="AICodeMenu"/>
+				<Strings>
+					<ButtonText>设置</ButtonText>
+				</Strings>
+			</Button>
+			<Button guid="guidAICodePackageCmdSet" id="GenerateCodeCommandId" priority="0x0100" type="Button">
+				<Parent guid="guidAICodePackageCmdSet" id="AICodeEditorContextMenuGroup"/>
+				<Strings>
+					<ButtonText>AI生成代码</ButtonText>
+				</Strings>
+			</Button>
+			<Button guid="guidAICodePackageCmdSet" id="RefactorCodeCommandId" priority="0x0200" type="Button">
+				<Parent guid="guidAICodePackageCmdSet" id="AICodeEditorContextMenuGroup"/>
+				<Strings>
+					<ButtonText>AI重构代码</ButtonText>
+				</Strings>
+			</Button>
+			<Button guid="guidAICodePackageCmdSet" id="ExplainCodeCommandId" priority="0x0300" type="Button">
+				<Parent guid="guidAICodePackageCmdSet" id="AICodeEditorContextMenuGroup"/>
+				<Strings>
+					<ButtonText>AI解释代码</ButtonText>
+				</Strings>
+			</Button>
+			<Button guid="guidAICodePackageCmdSet" id="FindIssuesCommandId" priority="0x0400" type="Button">
+				<Parent guid="guidAICodePackageCmdSet" id="AICodeEditorContextMenuGroup"/>
+				<Strings>
+					<ButtonText>AI查找代码问题</ButtonText>
+				</Strings>
+			</Button>
+		</Buttons>
+	</Commands>
 
-  <Symbols>
-    <GuidSymbol name="guidAICodePackage" value="{9a5b3c7d-1e2f-4g6h-8i9j-0k1l2m3n4o5p}" />
-    <GuidSymbol name="guidAICodePackageCmdSet" value="{1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p}">
-      <IDSymbol name="AICodeMenuGroup" value="0x1000" />
-      <IDSymbol name="AICodeEditorContextMenuGroup" value="0x1001" />
-      <IDSymbol name="AICodeMenu" value="0x2000" />
-      <IDSymbol name="ShowToolWindowCommandId" value="0x0100" />
-      <IDSymbol name="SettingsCommandId" value="0x0101" />
-      <IDSymbol name="GenerateCodeCommandId" value="0x0102" />
-      <IDSymbol name="RefactorCodeCommandId" value="0x0103" />
-      <IDSymbol name="ExplainCodeCommandId" value="0x0104" />
-      <IDSymbol name="FindIssuesCommandId" value="0x0105" />
-    </GuidSymbol>
-  </Symbols>
+	<Symbols>
+		<!-- 包GUID - 必须与AICodePackage.cs中的Guid特性完全一致 -->
+		<GuidSymbol name="guidAICodePackage" value="{9A5B3C7D-1E2F-4A6B-8C9D-0E1F2A3B4C5D}" />
+
+		<!-- 命令集GUID - 必须与所有命令类中的CommandSet完全一致 -->
+		<GuidSymbol name="guidAICodePackageCmdSet" value="{1A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D}">
+			<IDSymbol name="AICodeMenuGroup" value="0x1000" />
+			<IDSymbol name="AICodeEditorContextMenuGroup" value="0x1001" />
+			<IDSymbol name="AICodeMenu" value="0x2000" />
+			<IDSymbol name="ShowToolWindowCommandId" value="0x0100" />
+			<IDSymbol name="SettingsCommandId" value="0x0101" />
+			<IDSymbol name="GenerateCodeCommandId" value="0x0102" />
+			<IDSymbol name="RefactorCodeCommandId" value="0x0103" />
+			<IDSymbol name="ExplainCodeCommandId" value="0x0104" />
+			<IDSymbol name="FindIssuesCommandId" value="0x0105" />
+		</GuidSymbol>
+	</Symbols>
 </CommandTable>

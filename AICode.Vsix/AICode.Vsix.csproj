@@ -1,74 +1,93 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <UseWindowsForms>true</UseWindowsForms>
-    <UseWPF>true</UseWPF>
-    <OutputType>Library</OutputType>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <RootNamespace>AICode.Vsix</RootNamespace>
-    <AssemblyName>AICode.Vsix</AssemblyName>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Platforms>AnyCPU;x64</Platforms>
-    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Remove="AICode.Core.dll" />
-    <None Remove="libcurl.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="AICode.Core.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libcurl.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.CoreUtility" Version="17.14.275" />
-    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="17.14.249" />
-    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.14.40265" />
-    <PackageReference Include="Microsoft.VisualStudio.Text.Logic" Version="17.14.249" />
-    <PackageReference Include="Microsoft.VisualStudio.Text.UI" Version="17.14.249" />
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="18.5.40034" PrivateAssets="all" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AICode.Core\AICode.Core.vcxproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <None Update="source.extension.vsixmanifest">
-      <SubType>Designer</SubType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <VSCTCompile Include="Menus.vsct">
-      <ResourceName>Menus.ctmenu</ResourceName>
-      <SubType>Designer</SubType>
-    </VSCTCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Update="Properties\Settings.Designer.cs">
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="ToolWindows\AICodeToolWindowControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<UseWindowsForms>true</UseWindowsForms>
+		<UseWPF>true</UseWPF>
+		<OutputType>Library</OutputType>
+		<VsixType>Package</VsixType>
+		<GenerateVsixOnBuild>true</GenerateVsixOnBuild>
+		<CopyVsixContentToOutput>true</CopyVsixContentToOutput>
+		<RootNamespace>AICode.Vsix</RootNamespace>
+		<AssemblyName>AICode.Vsix</AssemblyName>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Platforms>AnyCPU;x64</Platforms>
+		<RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Remove="AICode.Core.dll" />
+		<None Remove="libcurl.dll" />
+		<None Remove="zlib1.dll" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="AICode.Core.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<IncludeInVSIX>true</IncludeInVSIX>
+		</Content>
+		<Content Include="libcurl.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<IncludeInVSIX>true</IncludeInVSIX>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.VisualStudio.CoreUtility" Version="17.14.275" />
+		<PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="17.14.249" />
+		<PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.14.40265" />
+		<PackageReference Include="Microsoft.VisualStudio.Text.Logic" Version="17.14.249" />
+		<PackageReference Include="Microsoft.VisualStudio.Text.UI" Version="17.14.249" />
+		<PackageReference Include="Microsoft.VSSDK.BuildTools" Version="18.5.40034" PrivateAssets="all" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\AICode.Core\AICode.Core.vcxproj">
+			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+			<IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+		</ProjectReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="Properties\Settings.settings">
+			<Generator>SettingsSingleFileGenerator</Generator>
+			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
+		</None>
+		<None Update="source.extension.vsixmanifest">
+			<SubType>Designer</SubType>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<VSCTCompile Include="Menus.vsct">
+			<ResourceName>Menus.ctmenu</ResourceName>
+			<SubType>Designer</SubType>
+		</VSCTCompile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Properties\Settings.Designer.cs">
+			<DesignTimeSharedInput>True</DesignTimeSharedInput>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Settings.settings</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="Properties\Resources.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Page Update="ToolWindows\AICodeToolWindowControl.xaml">
+			<Generator>MSBuild:Compile</Generator>
+			<SubType>Designer</SubType>
+		</Page>
+	</ItemGroup>
+
+	<!-- 关键修复：显式导入VSIX生成工具 -->
+	<Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
