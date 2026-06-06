@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "AICode.Vsix": {
+      "commandName": "Project"
+    }
+  }
+}
