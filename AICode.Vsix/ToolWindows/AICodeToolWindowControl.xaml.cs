@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.VisualStudio.Shell;
@@ -205,7 +204,7 @@ namespace AICode.Vsix
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var textView = GetActiveTextView();
+            var textView = EditorContext.GetActiveTextView();
             if (textView == null)
             {
                 ResultTextBox.Text = "无法获取活动编辑器。";
@@ -233,19 +232,17 @@ namespace AICode.Vsix
                 edit.Apply();
             }
         }
-
-        private ITextView GetActiveTextView()
-        {
-            return ServiceProvider.GlobalProvider.GetService(typeof(Microsoft.VisualStudio.TextManager.Interop.SVsTextManager)) is Microsoft.VisualStudio.TextManager.Interop.IVsTextManager textManager
-                && textManager.GetActiveView(1, null, out var textView) == Microsoft.VisualStudio.VSConstants.S_OK
-                ? textView as ITextView
-                : null;
-        }
-
         private ITextDocument GetActiveDocument()
         {
-            var textView = GetActiveTextView();
-            return textView?.TextBuffer.Properties.GetProperty(typeof(ITextDocument)) as ITextDocument;
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var textView = EditorContext.GetActiveTextView();
+            if (textView == null)
+            {
+                return null;
+            }
+
+            textView.TextBuffer.Properties.TryGetProperty(typeof(ITextDocument), out ITextDocument document);
+            return document;
         }
 
         private string GetLanguageFromFilePath(string filePath)

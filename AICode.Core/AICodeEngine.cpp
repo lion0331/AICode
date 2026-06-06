@@ -1,11 +1,113 @@
 ﻿#include "AICodeEngine.h"
+
+#include <cstring>
+#include <cwchar>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <utility>
+#include <windows.h>
 
 using json = nlohmann::json;
 
 namespace AICode::Core
 {
+    namespace
+    {
+        std::string WideToUtf8(const std::wstring& value)
+        {
+            if (value.empty())
+            {
+                return {};
+            }
+
+            const int requiredSize = WideCharToMultiByte(
+                CP_UTF8,
+                0,
+                value.c_str(),
+                static_cast<int>(value.size()),
+                nullptr,
+                0,
+                nullptr,
+                nullptr);
+
+            if (requiredSize <= 0)
+            {
+                return {};
+            }
+
+            std::string utf8Value(requiredSize, '\0');
+            WideCharToMultiByte(
+                CP_UTF8,
+                0,
+                value.c_str(),
+                static_cast<int>(value.size()),
+                &utf8Value[0],
+                requiredSize,
+                nullptr,
+                nullptr);
+
+            return utf8Value;
+        }
+
+        std::wstring Utf8ToWide(const std::string& value)
+        {
+            if (value.empty())
+            {
+                return {};
+            }
+
+            const int requiredSize = MultiByteToWideChar(
+                CP_UTF8,
+                0,
+                value.c_str(),
+                static_cast<int>(value.size()),
+                nullptr,
+                0);
+
+            if (requiredSize <= 0)
+            {
+                return {};
+            }
+
+            std::wstring wideValue(requiredSize, L'\0');
+            MultiByteToWideChar(
+                CP_UTF8,
+                0,
+                value.c_str(),
+                static_cast<int>(value.size()),
+                &wideValue[0],
+                requiredSize);
+
+            return wideValue;
+        }
+
+        std::string SafeUtf8String(const wchar_t* value)
+        {
+            return value != nullptr ? WideToUtf8(value) : std::string();
+        }
+
+        wchar_t* AllocateWideString(const std::string& value)
+        {
+            const auto wideValue = Utf8ToWide(value);
+            const auto size = wideValue.size() + 1;
+            auto* buffer = new wchar_t[size];
+            std::wmemcpy(buffer, wideValue.c_str(), size);
+            return buffer;
+        }
+
+        NativeCompletionResponse ToNativeResponse(const CompletionResponse& response)
+        {
+            return {
+                AllocateWideString(response.CompletionText),
+                AllocateWideString(response.ModelUsed),
+                response.TokensUsed,
+                response.Success,
+                AllocateWideString(response.ErrorMessage)
+            };
+        }
+    }
+
     AICodeEngine::AICodeEngine() : m_initialized(false), m_workerRunning(false)
     {
     }
@@ -27,6 +129,16 @@ namespace AICode::Core
     {
         try
         {
+            if (m_workerRunning)
+            {
+                m_workerRunning = false;
+                m_queueCondition.notify_one();
+                if (m_workerThread.joinable())
+                {
+                    m_workerThread.join();
+                }
+            }
+
             m_client = std::make_unique<OpenAIClient>(modelType, apiKey, apiBaseUrl);
             m_initialized = true;
 
@@ -56,7 +168,10 @@ namespace AICode::Core
             lock.unlock();
 
             CompletionResponse response = GetCodeCompletion(task.request);
-            task.callback(response);
+            if (task.callback)
+            {
+                task.callback(response);
+            }
         }
     }
 
@@ -224,7 +339,7 @@ namespace AICode::Core
 
     std::string AICodeEngine::ReadFile(const std::string& filePath)
     {
-        std::ifstream file(filePath, std::ios::in | std::ios::binary);
+        std::ifstream file(std::filesystem::path(Utf8ToWide(filePath)), std::ios::in | std::ios::binary);
         if (!file.is_open())
         {
             return "";
@@ -237,7 +352,7 @@ namespace AICode::Core
 
     bool AICodeEngine::WriteFile(const std::string& filePath, const std::string& content)
     {
-        std::ofstream file(filePath, std::ios::out | std::ios::binary | std::ios::trunc);
+        std::ofstream file(std::filesystem::path(Utf8ToWide(filePath)), std::ios::out | std::ios::binary | std::ios::trunc);
         if (!file.is_open())
         {
             return false;
@@ -256,13 +371,203 @@ namespace AICode::Core
     }
 
     // 导出函数实现
+}
+
+using namespace AICode::Core;
+
+extern "C"
+{
     IAICodeEngine* CreateAICodeEngine()
     {
-        return new AICodeEngine();
+        return new AICode::Core::AICodeEngine();
     }
 
     void ReleaseAICodeEngine(IAICodeEngine* engine)
     {
         delete engine;
+    }
+
+    bool InitializeAICodeEngine(IAICodeEngine* engine, ModelType modelType, const wchar_t* apiKey, const wchar_t* apiBaseUrl)
+    {
+        if (engine == nullptr)
+        {
+            return false;
+        }
+
+        return engine->Initialize(modelType, SafeUtf8String(apiKey), SafeUtf8String(apiBaseUrl));
+    }
+
+    NativeCompletionResponse GetCodeCompletion(
+        IAICodeEngine* engine,
+        const wchar_t* filePath,
+        const wchar_t* language,
+        const wchar_t* codeBeforeCursor,
+        const wchar_t* codeAfterCursor,
+        int lineNumber,
+        int columnNumber,
+        int maxTokens,
+        float temperature)
+    {
+        if (engine == nullptr)
+        {
+            return ToNativeResponse({ "", "", 0, false, "引擎实例为空" });
+        }
+
+        CompletionRequest request;
+        request.FilePath = SafeUtf8String(filePath);
+        request.Language = SafeUtf8String(language);
+        request.CodeBeforeCursor = SafeUtf8String(codeBeforeCursor);
+        request.CodeAfterCursor = SafeUtf8String(codeAfterCursor);
+        request.LineNumber = lineNumber;
+        request.ColumnNumber = columnNumber;
+        request.MaxTokens = maxTokens;
+        request.Temperature = temperature;
+
+        return ToNativeResponse(engine->GetCodeCompletion(request));
+    }
+
+    void GetCodeCompletionAsync(
+        IAICodeEngine* engine,
+        const wchar_t* filePath,
+        const wchar_t* language,
+        const wchar_t* codeBeforeCursor,
+        const wchar_t* codeAfterCursor,
+        int lineNumber,
+        int columnNumber,
+        int maxTokens,
+        float temperature,
+        CompletionCallback callback,
+        void* userData)
+    {
+        if (engine == nullptr || callback == nullptr)
+        {
+            return;
+        }
+
+        CompletionRequest request;
+        request.FilePath = SafeUtf8String(filePath);
+        request.Language = SafeUtf8String(language);
+        request.CodeBeforeCursor = SafeUtf8String(codeBeforeCursor);
+        request.CodeAfterCursor = SafeUtf8String(codeAfterCursor);
+        request.LineNumber = lineNumber;
+        request.ColumnNumber = columnNumber;
+        request.MaxTokens = maxTokens;
+        request.Temperature = temperature;
+
+        engine->GetCodeCompletionAsync(request, [callback, userData](const CompletionResponse& response)
+        {
+            callback(ToNativeResponse(response), userData);
+        });
+    }
+
+    NativeCompletionResponse GenerateCode(
+        IAICodeEngine* engine,
+        const wchar_t* prompt,
+        const wchar_t* language,
+        const wchar_t* const* contextFiles,
+        int contextFilesCount,
+        int maxTokens,
+        float temperature)
+    {
+        if (engine == nullptr)
+        {
+            return ToNativeResponse({ "", "", 0, false, "引擎实例为空" });
+        }
+
+        GenerationRequest request;
+        request.Prompt = SafeUtf8String(prompt);
+        request.Language = SafeUtf8String(language);
+        request.MaxTokens = maxTokens;
+        request.Temperature = temperature;
+
+        for (int index = 0; index < contextFilesCount; ++index)
+        {
+            request.ContextFiles.push_back(SafeUtf8String(contextFiles[index]));
+        }
+
+        return ToNativeResponse(engine->GenerateCode(request));
+    }
+
+    NativeCompletionResponse RefactorCode(
+        IAICodeEngine* engine,
+        const wchar_t* filePath,
+        const wchar_t* originalCode,
+        const wchar_t* refactorInstruction,
+        int startLine,
+        int endLine)
+    {
+        if (engine == nullptr)
+        {
+            return ToNativeResponse({ "", "", 0, false, "引擎实例为空" });
+        }
+
+        RefactorRequest request;
+        request.FilePath = SafeUtf8String(filePath);
+        request.OriginalCode = SafeUtf8String(originalCode);
+        request.RefactorInstruction = SafeUtf8String(refactorInstruction);
+        request.StartLine = startLine;
+        request.EndLine = endLine;
+
+        return ToNativeResponse(engine->RefactorCode(request));
+    }
+
+    wchar_t* ExplainCode(IAICodeEngine* engine, const wchar_t* code, const wchar_t* language)
+    {
+        if (engine == nullptr)
+        {
+            return AllocateWideString("Engine instance is null");
+        }
+
+        return AllocateWideString(engine->ExplainCode(SafeUtf8String(code), SafeUtf8String(language)));
+    }
+
+    wchar_t* FindCodeIssues(IAICodeEngine* engine, const wchar_t* code, const wchar_t* language)
+    {
+        if (engine == nullptr)
+        {
+            return AllocateWideString("Engine instance is null");
+        }
+
+        return AllocateWideString(engine->FindCodeIssues(SafeUtf8String(code), SafeUtf8String(language)));
+    }
+
+    wchar_t* ReadAICodeFile(IAICodeEngine* engine, const wchar_t* filePath)
+    {
+        if (engine == nullptr)
+        {
+            return AllocateWideString("");
+        }
+
+        return AllocateWideString(engine->ReadFile(SafeUtf8String(filePath)));
+    }
+
+    bool WriteAICodeFile(IAICodeEngine* engine, const wchar_t* filePath, const wchar_t* content)
+    {
+        if (engine == nullptr)
+        {
+            return false;
+        }
+
+        return engine->WriteFile(SafeUtf8String(filePath), SafeUtf8String(content));
+    }
+
+    void FreeAICodeString(wchar_t* value)
+    {
+        delete[] value;
+    }
+
+    void FreeCompletionResponse(NativeCompletionResponse* response)
+    {
+        if (response == nullptr)
+        {
+            return;
+        }
+
+        FreeAICodeString(response->CompletionText);
+        FreeAICodeString(response->ModelUsed);
+        FreeAICodeString(response->ErrorMessage);
+        response->CompletionText = nullptr;
+        response->ModelUsed = nullptr;
+        response->ErrorMessage = nullptr;
     }
 }

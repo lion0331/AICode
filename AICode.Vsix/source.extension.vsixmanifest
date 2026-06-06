@@ -1,37 +1,27 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="AICode.Vsix.9a5b3c7d-1e2f-4g6h-8i9j-0k1l2m3n4o5p" Version="1.0.0" Language="en-US" Publisher="AICode" />
+        <Identity Id="AICode.Vsix.9A5B3C7D-1E2F-4A6B-8C9D-0E1F2A3B4C5D" Version="1.0.0" Language="en-US" Publisher="AICode" />
         <DisplayName>AICode Assistant</DisplayName>
         <Description xml:space="preserve">Visual Studio 2026 AI代码助手，支持GPT、Claude等顶尖大模型，提供代码补全、生成、重构和审查功能。</Description>
-        <Icon>Resources\icon.png</Icon>
-        <PreviewImage>Resources\preview.png</PreviewImage>
         <Tags>AI, Code, C++, C#, Copilot, GPT-4, Claude</Tags>
     </Metadata>
-    <Installation>
-        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0,18.0)" />
-        <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[17.0,18.0)" />
-        <InstallationTarget Id="Microsoft.VisualStudio.Enterprise" Version="[17.0,18.0)" />
+    <Installation ExtensionType="VSSDK">
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[18.0,19.0)" ProductArchitecture="amd64" />
+        <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[18.0,19.0)" ProductArchitecture="amd64" />
+        <InstallationTarget Id="Microsoft.VisualStudio.Enterprise" Version="[18.0,19.0)" ProductArchitecture="amd64" />
     </Installation>
     <Dependencies>
         <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.8,)" />
     </Dependencies>
     <Assets>
-        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="AICode.Vsix" Path="|AICode.Vsix|Pkgdef" />
-        <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="AICode.Vsix" Path="AICode.Vsix.dll" />
-        <Asset Type="Microsoft.VisualStudio.ToolWindow" d:Source="Project" d:ProjectName="AICode.Vsix" Path="ToolWindows\AICodeToolWindow.cs" />
-        <Asset Type="Microsoft.VisualStudio.Command" d:Source="Project" d:ProjectName="AICode.Vsix" Path="Commands\GenerateCodeCommand.cs" />
-        <Asset Type="Microsoft.VisualStudio.Command" d:Source="Project" d:ProjectName="AICode.Vsix" Path="Commands\RefactorCodeCommand.cs" />
-        <Asset Type="Microsoft.VisualStudio.Command" d:Source="Project" d:ProjectName="AICode.Vsix" Path="Commands\ExplainCodeCommand.cs" />
-        <Asset Type="Microsoft.VisualStudio.Command" d:Source="Project" d:ProjectName="AICode.Vsix" Path="Commands\FindIssuesCommand.cs" />
-        <Asset Type="Microsoft.VisualStudio.Command" d:Source="Project" d:ProjectName="AICode.Vsix" Path="Commands\SettingsCommand.cs" />
-        <Asset Type="Microsoft.VisualStudio.Command" d:Source="Project" d:ProjectName="AICode.Vsix" Path="Commands\ShowToolWindowCommand.cs" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="AICode.Vsix.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="AICode.Vsix.dll" />
         <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="File" Path="AICode.Core.dll" />
         <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="File" Path="libcurl.dll" />
-        <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="File" Path="zlib1.dll" />
     </Assets>
     <Prerequisites>
-        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.0,18.0)" DisplayName="Visual Studio core editor" />
-        <Prerequisite Id="Microsoft.VisualStudio.Component.NuGet" Version="[17.0,18.0)" DisplayName="NuGet package manager" />
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[18.0,19.0)" DisplayName="Visual Studio core editor" />
+        <Prerequisite Id="Microsoft.VisualStudio.Component.NuGet" Version="[18.0,19.0)" DisplayName="NuGet package manager" />
     </Prerequisites>
 </PackageManifest>

@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.Utilities;
 using System;
 using System.Collections.Immutable;
 using System.ComponentModel.Composition;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -65,8 +66,6 @@ namespace AICode.Vsix
             CompletionTrigger trigger, SnapshotPoint triggerLocation, SnapshotSpan applicableToSpan,
             CancellationToken token)
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
-
             var engine = AICodePackage.Instance?.Engine;
             if (engine == null || !AICodePackage.Instance.Settings.EnableInlineCompletion)
             {
@@ -74,8 +73,7 @@ namespace AICode.Vsix
             }
 
             // 获取文件信息
-            var document = triggerLocation.Snapshot.TextBuffer.Properties
-                .GetProperty(typeof(ITextDocument)) as ITextDocument;
+            triggerLocation.Snapshot.TextBuffer.Properties.TryGetProperty(typeof(ITextDocument), out ITextDocument document);
             string filePath = document?.FilePath ?? "unknown.cpp";
             string language = GetLanguageFromFilePath(filePath);
 
@@ -104,17 +102,18 @@ namespace AICode.Vsix
             };
 
             // 异步获取补全
-            var tcs = new TaskCompletionSource<CompletionResponse>();
-            engine.GetCodeCompletionAsync(request, response => tcs.SetResult(response));
+            var tcs = new TaskCompletionSource<CompletionResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var cancellationRegistration = token.Register(() => tcs.TrySetCanceled(token));
+            engine.GetCodeCompletionAsync(request, response => tcs.TrySetResult(response));
 
             // 等待任务完成或取消
-            var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(-1, token));
+            var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(Timeout.Infinite, token));
             if (completedTask != tcs.Task)
             {
                 return CompletionContext.Empty;
             }
 
-            var response = await tcs.Task;
+            var response = await tcs.Task.ConfigureAwait(false);
 
             if (!response.Success || string.IsNullOrEmpty(response.CompletionText))
             {
@@ -123,7 +122,9 @@ namespace AICode.Vsix
 
             // 创建补全项
             var completionText = response.CompletionText;
-            var displayText = "AI: " + completionText.TrimStart().Split('\n')[0].Substring(0, Math.Min(50, completionText.Length));
+            var firstLine = completionText.TrimStart().Split('\n').FirstOrDefault() ?? string.Empty;
+            var previewLength = Math.Min(50, firstLine.Length);
+            var displayText = "AI: " + firstLine.Substring(0, previewLength);
 
             var completionItem = new CompletionItem(
                 displayText: displayText,
@@ -163,8 +164,7 @@ namespace AICode.Vsix
                 return false;
 
             // 只在C++和C#文件中触发
-            var document = triggerLocation.Snapshot.TextBuffer.Properties
-                .GetProperty(typeof(ITextDocument)) as ITextDocument;
+            triggerLocation.Snapshot.TextBuffer.Properties.TryGetProperty(typeof(ITextDocument), out ITextDocument document);
             if (document == null)
                 return false;
 

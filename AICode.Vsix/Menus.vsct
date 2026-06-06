@@ -68,7 +68,7 @@
 		<GuidSymbol name="guidAICodePackage" value="{9A5B3C7D-1E2F-4A6B-8C9D-0E1F2A3B4C5D}" />
 
 		<!-- 命令集GUID - 必须与所有命令类中的CommandSet完全一致 -->
-		<GuidSymbol name="guidAICodePackageCmdSet" value="{1A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D}">
+		<GuidSymbol name="guidAICodePackageCmdSet" value="{1A2B3C4D-5E6F-4A8B-9C0D-1E2F3A4B5C6D}">
 			<IDSymbol name="AICodeMenuGroup" value="0x1000" />
 			<IDSymbol name="AICodeEditorContextMenuGroup" value="0x1001" />
 			<IDSymbol name="AICodeMenu" value="0x2000" />

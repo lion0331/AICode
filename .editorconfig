@@ -1,0 +1,10 @@
+root = true
+
+[*.{cs,cpp,h,xaml,xml,csproj,vcxproj,vsct,sln,md}]
+charset = utf-8-bom
+end_of_line = crlf
+insert_final_newline = true
+
+[*.{cs,cpp,h}]
+indent_style = space
+indent_size = 4

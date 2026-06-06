@@ -9,8 +9,8 @@ namespace AICode.Vsix.Commands
 {
     internal sealed class GenerateCodeCommand : BaseCommand
     {
-        private static readonly Guid CommandSet = new Guid("1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p");
-        private const int CommandId = 0x0102;
+        private new static readonly Guid CommandSet = new Guid("1A2B3C4D-5E6F-4A8B-9C0D-1E2F3A4B5C6D");
+        private new const int CommandId = 0x0102;
 
         private GenerateCodeCommand(AsyncPackage package) : base(package, CommandSet, CommandId)
         {
@@ -27,7 +27,7 @@ namespace AICode.Vsix.Commands
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             
-            var textView = GetActiveTextView();
+            var textView = EditorContext.GetActiveTextView();
             if (textView == null)
                 return;
 
@@ -35,7 +35,7 @@ namespace AICode.Vsix.Commands
             if (window?.Frame == null)
                 return;
 
-            var document = textView.TextBuffer.Properties.GetProperty(typeof(ITextDocument)) as ITextDocument;
+            textView.TextBuffer.Properties.TryGetProperty(typeof(ITextDocument), out ITextDocument document);
             string filePath = document?.FilePath ?? "unknown.cpp";
 
             // 获取选中的代码
@@ -56,14 +56,6 @@ namespace AICode.Vsix.Commands
             // 显示工具窗口
             Microsoft.VisualStudio.Shell.Interop.IVsWindowFrame windowFrame = (Microsoft.VisualStudio.Shell.Interop.IVsWindowFrame)window.Frame;
             Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
-        }
-
-        private ITextView GetActiveTextView()
-        {
-            return ServiceProvider.GlobalProvider.GetService(typeof(Microsoft.VisualStudio.TextManager.Interop.SVsTextManager)) is Microsoft.VisualStudio.TextManager.Interop.IVsTextManager textManager
-                && textManager.GetActiveView(1, null, out var textView) == Microsoft.VisualStudio.VSConstants.S_OK
-                ? textView as ITextView
-                : null;
         }
     }
 }

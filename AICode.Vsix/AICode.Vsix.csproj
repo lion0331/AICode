@@ -1,19 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net8.0-windows</TargetFramework>
+		<TargetFramework>net48</TargetFramework>
 		<UseWindowsForms>true</UseWindowsForms>
 		<UseWPF>true</UseWPF>
 		<OutputType>Library</OutputType>
-		<VsixType>Package</VsixType>
+		<VsixType>v3</VsixType>
 		<GenerateVsixOnBuild>true</GenerateVsixOnBuild>
+		<GenerateVsixContainer>true</GenerateVsixContainer>
+		<GeneratePkgDefFile>true</GeneratePkgDefFile>
+		<IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
+		<IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
+		<CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
+		<UseCodeBase>true</UseCodeBase>
 		<CopyVsixContentToOutput>true</CopyVsixContentToOutput>
 		<RootNamespace>AICode.Vsix</RootNamespace>
 		<AssemblyName>AICode.Vsix</AssemblyName>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<LangVersion>latest</LangVersion>
 		<Platforms>AnyCPU;x64</Platforms>
 		<RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<VsixStagingDir>$(BaseIntermediateOutputPath)$(Configuration)\$(Platform)\vsix\</VsixStagingDir>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -88,6 +96,57 @@
 		</Page>
 	</ItemGroup>
 
-	<!-- 关键修复：显式导入VSIX生成工具 -->
-	<Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
+	<Target Name="EnsureVsSdkBuildToolsImported" BeforeTargets="Build">
+		<Error Condition="!Exists('$(NuGetPackageRoot)microsoft.vssdk.buildtools\18.5.40034\build\Microsoft.VSSDK.BuildTools.targets')" Text="缺少 Microsoft.VSSDK.BuildTools 18.5.40034，请先还原 NuGet 包。" />
+	</Target>
+
+	<Target Name="CreateFallbackPkgDef" AfterTargets="Build">
+		<PropertyGroup>
+			<PkgDefFile>$(OutputPath)$(AssemblyName).pkgdef</PkgDefFile>
+		</PropertyGroup>
+		<ItemGroup>
+			<PkgDefLines Include="[$RootKey$\Packages\{9A5B3C7D-1E2F-4A6B-8C9D-0E1F2A3B4C5D}]" />
+			<PkgDefLines Include="@=&quot;AICode Assistant&quot;" />
+			<PkgDefLines Include="&quot;InprocServer32&quot;=&quot;$WinDir$\SYSTEM32\MSCOREE.DLL&quot;" />
+			<PkgDefLines Include="&quot;Class&quot;=&quot;AICode.Vsix.AICodePackage&quot;" />
+			<PkgDefLines Include="&quot;CodeBase&quot;=&quot;$PackageFolder$\AICode.Vsix.dll&quot;" />
+			<PkgDefLines Include="&quot;ID&quot;=&quot;AICode Assistant&quot;" />
+			<PkgDefLines Include="&quot;MinEdition&quot;=dword:00000000" />
+			<PkgDefLines Include="&quot;ProductArchitecture&quot;=&quot;amd64&quot;" />
+			<PkgDefLines Include="[$RootKey$\Menus]" />
+			<PkgDefLines Include="&quot;{9A5B3C7D-1E2F-4A6B-8C9D-0E1F2A3B4C5D}&quot;=&quot;,, Menus.ctmenu, 1&quot;" />
+		</ItemGroup>
+		<WriteLinesToFile File="$(PkgDefFile)" Overwrite="true" Lines="@(PkgDefLines)" Encoding="Unicode" />
+	</Target>
+
+	<Target Name="CreateFallbackVsix" AfterTargets="CreateFallbackPkgDef">
+		<PropertyGroup>
+			<FallbackVsixOutputPath>$(TargetDir)$(AssemblyName).vsix</FallbackVsixOutputPath>
+		</PropertyGroup>
+		<RemoveDir Directories="$(VsixStagingDir)" />
+		<MakeDir Directories="$(VsixStagingDir)" />
+		<MakeDir Directories="$(VsixStagingDir)_rels" />
+		<Copy SourceFiles="$(MSBuildProjectDirectory)\source.extension.vsixmanifest" DestinationFiles="$(VsixStagingDir)extension.vsixmanifest" />
+		<Copy SourceFiles="$(TargetDir)$(AssemblyName).dll" DestinationFolder="$(VsixStagingDir)" />
+		<Copy SourceFiles="$(TargetDir)$(AssemblyName).pkgdef" DestinationFolder="$(VsixStagingDir)" Condition="Exists('$(TargetDir)$(AssemblyName).pkgdef')" />
+		<Copy SourceFiles="$(SolutionDir)bin\$(Platform)\$(Configuration)\AICode.Core.dll" DestinationFolder="$(VsixStagingDir)" Condition="Exists('$(SolutionDir)bin\$(Platform)\$(Configuration)\AICode.Core.dll')" />
+		<Copy SourceFiles="$(MSBuildProjectDirectory)\libcurl.dll" DestinationFolder="$(VsixStagingDir)" Condition="Exists('$(MSBuildProjectDirectory)\libcurl.dll')" />
+		<ItemGroup>
+			<ContentTypesLines Include="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;" />
+			<ContentTypesLines Include="&lt;Types xmlns=&quot;http://schemas.openxmlformats.org/package/2006/content-types&quot;&gt;" />
+			<ContentTypesLines Include="  &lt;Default Extension=&quot;vsixmanifest&quot; ContentType=&quot;text/xml&quot; /&gt;" />
+			<ContentTypesLines Include="  &lt;Default Extension=&quot;dll&quot; ContentType=&quot;application/octet-stream&quot; /&gt;" />
+			<ContentTypesLines Include="  &lt;Default Extension=&quot;pkgdef&quot; ContentType=&quot;text/plain&quot; /&gt;" />
+			<ContentTypesLines Include="  &lt;Default Extension=&quot;png&quot; ContentType=&quot;application/octet-stream&quot; /&gt;" />
+			<ContentTypesLines Include="&lt;/Types&gt;" />
+			<RelationshipLines Include="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;" />
+			<RelationshipLines Include="&lt;Relationships xmlns=&quot;http://schemas.openxmlformats.org/package/2006/relationships&quot;&gt;" />
+			<RelationshipLines Include="  &lt;Relationship Id=&quot;R0&quot; Type=&quot;http://schemas.microsoft.com/developer/vsx-schema/2011&quot; Target=&quot;extension.vsixmanifest&quot; /&gt;" />
+			<RelationshipLines Include="&lt;/Relationships&gt;" />
+		</ItemGroup>
+		<WriteLinesToFile File="$(VsixStagingDir)[Content_Types].xml" Overwrite="true" Lines="@(ContentTypesLines)" Encoding="UTF-8" />
+		<WriteLinesToFile File="$(VsixStagingDir)_rels\.rels" Overwrite="true" Lines="@(RelationshipLines)" Encoding="UTF-8" />
+		<ZipDirectory SourceDirectory="$(VsixStagingDir)" DestinationFile="$(FallbackVsixOutputPath)" Overwrite="true" />
+		<Message Importance="high" Text="Fallback VSIX created at $(FallbackVsixOutputPath)" />
+	</Target>
 </Project>

@@ -1,8 +1,8 @@
-﻿#pragma once
+#pragma once
 
 #include "AICodeCore.h"
-#include <curl/curl.h>
 #include <nlohmann/json.hpp>
+#include <string>
 
 namespace AICode::Core
 {
@@ -10,18 +10,18 @@ namespace AICode::Core
     {
     public:
         OpenAIClient(ModelType modelType, const std::string& apiKey, const std::string& apiBaseUrl);
-        ~OpenAIClient();
 
-        CompletionResponse CreateChatCompletion(const nlohmann::json& messages, 
-            int maxTokens, float temperature);
+        CompletionResponse CreateChatCompletion(const nlohmann::json& messages, int maxTokens, float temperature);
 
     private:
         ModelType m_modelType;
         std::string m_apiKey;
         std::string m_apiBaseUrl;
-        CURL* m_curl;
 
-        static size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* s);
         std::string GetModelName() const;
+        std::string GetDefaultBaseUrl() const;
+        CompletionResponse CreateOpenAICompletion(const nlohmann::json& messages, int maxTokens, float temperature) const;
+        CompletionResponse CreateClaudeCompletion(const nlohmann::json& messages, int maxTokens, float temperature) const;
+        CompletionResponse CreateGeminiCompletion(const nlohmann::json& messages, int maxTokens, float temperature) const;
     };
 }

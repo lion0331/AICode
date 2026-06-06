@@ -15,7 +15,7 @@ namespace AICode.Vsix
     [ProvideOptionPage(typeof(SettingsPage), "AICode Assistant", "General", 0, 0, true)]
     public sealed class AICodePackage : AsyncPackage
     {
-        public const string PackageGuidString = "9a5b3c7d-1e2f-4g6h-8i9j-0k1l2m3n4o5p";
+        public const string PackageGuidString = "9A5B3C7D-1E2F-4A6B-8C9D-0E1F2A3B4C5D";
         public static AICodePackage Instance { get; private set; }
         public AICodeEngine Engine { get; private set; }
         public SettingsPage Settings { get; private set; }
