@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace AICode.Vsix
 {
@@ -36,6 +35,7 @@ namespace AICode.Vsix
         [MarshalAs(UnmanagedType.LPStr)] public string ErrorMessage;
     }
 
+    // 关键修复：在参数前显式添加in关键字
     public delegate void CompletionCallback(in CompletionResponse response);
 
     internal static class AICodeEngineInterop
@@ -50,19 +50,20 @@ namespace AICode.Vsix
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool Initialize(IntPtr engine, ModelType modelType, 
-            [MarshalAs(UnmanagedType.LPStr)] string apiKey, 
+        public static extern bool Initialize(IntPtr engine, ModelType modelType,
+            [MarshalAs(UnmanagedType.LPStr)] string apiKey,
             [MarshalAs(UnmanagedType.LPStr)] string apiBaseUrl);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern CompletionResponse GetCodeCompletion(IntPtr engine, in CompletionRequest request);
 
+        // 关键修复：在request参数前显式添加in关键字
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void GetCodeCompletionAsync(IntPtr engine, in CompletionRequest request, 
+        public static extern void GetCodeCompletionAsync(IntPtr engine, in CompletionRequest request,
             CompletionCallback callback);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CompletionResponse GenerateCode(IntPtr engine, 
+        public static extern CompletionResponse GenerateCode(IntPtr engine,
             [MarshalAs(UnmanagedType.LPStr)] string prompt,
             [MarshalAs(UnmanagedType.LPStr)] string language,
             [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.LPStr, SizeParamIndex = 4)] string[] contextFiles,
@@ -135,21 +136,22 @@ namespace AICode.Vsix
 
         public void GetCodeCompletionAsync(CompletionRequest request, Action<CompletionResponse> callback)
         {
-            AICodeEngineInterop.GetCodeCompletionAsync(_engine, request, response => callback(response));
+            // 关键修复：确保lambda参数匹配委托的in修饰符
+            AICodeEngineInterop.GetCodeCompletionAsync(_engine, request, (in CompletionResponse response) => callback(response));
         }
 
-        public CompletionResponse GenerateCode(string prompt, string language, string[] contextFiles = null, 
+        public CompletionResponse GenerateCode(string prompt, string language, string[] contextFiles = null,
             int maxTokens = 4096, float temperature = 0.7f)
         {
             contextFiles ??= Array.Empty<string>();
-            return AICodeEngineInterop.GenerateCode(_engine, prompt, language, contextFiles, 
+            return AICodeEngineInterop.GenerateCode(_engine, prompt, language, contextFiles,
                 contextFiles.Length, maxTokens, temperature);
         }
 
-        public CompletionResponse RefactorCode(string filePath, string originalCode, string refactorInstruction, 
+        public CompletionResponse RefactorCode(string filePath, string originalCode, string refactorInstruction,
             int startLine, int endLine)
         {
-            return AICodeEngineInterop.RefactorCode(_engine, filePath, originalCode, refactorInstruction, 
+            return AICodeEngineInterop.RefactorCode(_engine, filePath, originalCode, refactorInstruction,
                 startLine, endLine);
         }
 

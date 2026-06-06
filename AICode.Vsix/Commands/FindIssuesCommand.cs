@@ -35,7 +35,7 @@ namespace AICode.Vsix.Commands
             if (window?.Frame == null)
                 return;
 
-            var document = textView.TextBuffer.GetRelatedDocuments().FirstOrDefault();
+            var document = textView.TextBuffer.Properties.GetProperty(typeof(ITextDocument)) as ITextDocument;
             string filePath = document?.FilePath ?? "unknown.cpp";
 
             // 获取选中的代码

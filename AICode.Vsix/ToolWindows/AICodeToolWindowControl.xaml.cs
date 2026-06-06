@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.Text.Editor;
 
 namespace AICode.Vsix
 {
-    public partial class AICodeToolWindowControl : UserControl
+    public partial class AICodeToolWindowControl : System.Windows.Controls.UserControl
     {
         private string _selectedCode;
         private string _filePath;
@@ -51,10 +51,10 @@ namespace AICode.Vsix
             try
             {
                 var document = GetActiveDocument();
-                string language = document?.ContentType.TypeName.ToLower() ?? "cpp";
+                string language = GetLanguageFromFilePath(document?.FilePath ?? "unknown.cpp");
                 string[] contextFiles = string.IsNullOrEmpty(_filePath) ? Array.Empty<string>() : new[] { _filePath };
 
-                var response = await System.Threading.Tasks.Task.Run(() => 
+                var response = await System.Threading.Tasks.Task.Run(() =>
                     engine.GenerateCode(prompt, language, contextFiles));
 
                 if (response.Success)
@@ -103,7 +103,7 @@ namespace AICode.Vsix
 
             try
             {
-                var response = await System.Threading.Tasks.Task.Run(() => 
+                var response = await System.Threading.Tasks.Task.Run(() =>
                     engine.RefactorCode(_filePath, _selectedCode, instruction, _startLine, _endLine));
 
                 if (response.Success)
@@ -146,9 +146,9 @@ namespace AICode.Vsix
             try
             {
                 var document = GetActiveDocument();
-                string language = document?.ContentType.TypeName.ToLower() ?? "cpp";
+                string language = GetLanguageFromFilePath(document?.FilePath ?? "unknown.cpp");
 
-                string explanation = await System.Threading.Tasks.Task.Run(() => 
+                string explanation = await System.Threading.Tasks.Task.Run(() =>
                     engine.ExplainCode(_selectedCode, language));
 
                 ResultTextBox.Text = explanation;
@@ -184,9 +184,9 @@ namespace AICode.Vsix
             try
             {
                 var document = GetActiveDocument();
-                string language = document?.ContentType.TypeName.ToLower() ?? "cpp";
+                string language = GetLanguageFromFilePath(document?.FilePath ?? "unknown.cpp");
 
-                string issues = await System.Threading.Tasks.Task.Run(() => 
+                string issues = await System.Threading.Tasks.Task.Run(() =>
                     engine.FindCodeIssues(_selectedCode, language));
 
                 ResultTextBox.Text = issues;
@@ -204,7 +204,7 @@ namespace AICode.Vsix
         private async void InsertButton_Click(object sender, RoutedEventArgs e)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            
+
             var textView = GetActiveTextView();
             if (textView == null)
             {
@@ -245,7 +245,22 @@ namespace AICode.Vsix
         private ITextDocument GetActiveDocument()
         {
             var textView = GetActiveTextView();
-            return textView?.TextBuffer.GetRelatedDocuments().FirstOrDefault();
+            return textView?.TextBuffer.Properties.GetProperty(typeof(ITextDocument)) as ITextDocument;
+        }
+
+        private string GetLanguageFromFilePath(string filePath)
+        {
+            if (filePath.EndsWith(".cpp", StringComparison.OrdinalIgnoreCase) ||
+                filePath.EndsWith(".h", StringComparison.OrdinalIgnoreCase) ||
+                filePath.EndsWith(".hpp", StringComparison.OrdinalIgnoreCase))
+            {
+                return "cpp";
+            }
+            else if (filePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+            {
+                return "csharp";
+            }
+            return "unknown";
         }
     }
 }

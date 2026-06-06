@@ -1,15 +1,16 @@
-﻿using System;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.Editor;
-using Microsoft.VisualStudio.Language.Intellisense;
+﻿using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Adornments;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Utilities;
+using System;
+using System.Collections.Immutable;
+using System.ComponentModel.Composition;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace AICode.Vsix
 {
@@ -28,7 +29,7 @@ namespace AICode.Vsix
             if (textView == null)
                 throw new ArgumentNullException(nameof(textView));
 
-            return textView.Properties.GetOrCreateSingletonProperty(() => 
+            return textView.Properties.GetOrCreateSingletonProperty(() =>
                 new CompletionSource(textView, NavigatorService));
         }
     }
@@ -45,12 +46,27 @@ namespace AICode.Vsix
             _navigatorService = navigatorService;
         }
 
-        public async Task<CompletionContext> GetCompletionContextAsync(IAsyncCompletionSession session, 
-            CompletionTrigger trigger, SnapshotPoint triggerLocation, SnapshotSpan applicableToSpan, 
+        public CompletionStartData InitializeCompletion(CompletionTrigger trigger, SnapshotPoint triggerLocation, CancellationToken token)
+        {
+            if (!ShouldTriggerCompletion(_textView, triggerLocation, trigger, trigger.Character))
+            {
+                return CompletionStartData.DoesNotParticipateInCompletion;
+            }
+
+            // 找到当前单词的起始位置
+            var navigator = _navigatorService.GetTextStructureNavigator(triggerLocation.Snapshot.TextBuffer);
+            var extent = navigator.GetExtentOfWord(triggerLocation - 1);
+            var applicableToSpan = new SnapshotSpan(extent.Span.Start, triggerLocation);
+
+            return new CompletionStartData(CompletionParticipation.ProvidesItems, applicableToSpan);
+        }
+
+        public async Task<CompletionContext> GetCompletionContextAsync(IAsyncCompletionSession session,
+            CompletionTrigger trigger, SnapshotPoint triggerLocation, SnapshotSpan applicableToSpan,
             CancellationToken token)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
-            
+
             var engine = AICodePackage.Instance?.Engine;
             if (engine == null || !AICodePackage.Instance.Settings.EnableInlineCompletion)
             {
@@ -58,14 +74,15 @@ namespace AICode.Vsix
             }
 
             // 获取文件信息
-            var document = triggerLocation.Snapshot.TextBuffer.GetRelatedDocuments().FirstOrDefault();
+            var document = triggerLocation.Snapshot.TextBuffer.Properties
+                .GetProperty(typeof(ITextDocument)) as ITextDocument;
             string filePath = document?.FilePath ?? "unknown.cpp";
-            string language = document?.ContentType.TypeName.ToLower() ?? "cpp";
+            string language = GetLanguageFromFilePath(filePath);
 
             // 获取光标前后的代码
             int cursorPosition = triggerLocation.Position;
             string codeBeforeCursor = triggerLocation.Snapshot.GetText(0, cursorPosition);
-            string codeAfterCursor = triggerLocation.Snapshot.GetText(cursorPosition, 
+            string codeAfterCursor = triggerLocation.Snapshot.GetText(cursorPosition,
                 triggerLocation.Snapshot.Length - cursorPosition);
 
             // 获取行号和列号
@@ -89,44 +106,56 @@ namespace AICode.Vsix
             // 异步获取补全
             var tcs = new TaskCompletionSource<CompletionResponse>();
             engine.GetCodeCompletionAsync(request, response => tcs.SetResult(response));
-            
-            var response = await tcs.Task.WithCancellation(token);
-            
+
+            // 等待任务完成或取消
+            var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(-1, token));
+            if (completedTask != tcs.Task)
+            {
+                return CompletionContext.Empty;
+            }
+
+            var response = await tcs.Task;
+
             if (!response.Success || string.IsNullOrEmpty(response.CompletionText))
             {
                 return CompletionContext.Empty;
             }
 
             // 创建补全项
+            var completionText = response.CompletionText;
+            var displayText = "AI: " + completionText.TrimStart().Split('\n')[0].Substring(0, Math.Min(50, completionText.Length));
+
             var completionItem = new CompletionItem(
-                displayText: "AI: " + response.CompletionText.TrimStart().Split('\n')[0].Substring(0, Math.Min(50, response.CompletionText.Length)),
+                displayText: displayText,
                 source: this,
                 icon: null,
-                iconAutomationText: "AI Completion",
-                filterText: response.CompletionText,
-                insertText: response.CompletionText,
-                description: new System.Collections.Generic.List<CompletionDescription>
-                {
-                    new CompletionDescription($"由 {response.ModelUsed} 生成\n\n{response.CompletionText}")
-                },
-                attributeIcons: null,
-                commitCharacters: _triggerCharacters,
-                applicableToSpan: applicableToSpan,
-                properties: null);
+                filters: ImmutableArray<CompletionFilter>.Empty,
+                suffix: "",
+                insertText: completionText,
+                sortText: displayText,
+                filterText: completionText,
+                attributeIcons: ImmutableArray<ImageElement>.Empty);
 
-            return new CompletionContext(new[] { completionItem }, applicableToSpan);
+            // 添加详细描述
+            completionItem.Properties["Description"] = $"由 {response.ModelUsed} 生成\n\n{completionText}";
+
+            return new CompletionContext(ImmutableArray.Create(completionItem));
         }
 
-        public Task<object> GetDescriptionAsync(IAsyncCompletionSession session, CompletionItem item, 
+        public Task<object> GetDescriptionAsync(IAsyncCompletionSession session, CompletionItem item,
             CancellationToken token)
         {
-            return Task.FromResult<object>(item.Description.FirstOrDefault());
+            if (item.Properties.ContainsProperty("Description"))
+            {
+                return Task.FromResult(item.Properties["Description"]);
+            }
+            return Task.FromResult<object>(null);
         }
 
-        public bool ShouldTriggerCompletion(ITextView textView, SnapshotPoint triggerLocation, 
+        public bool ShouldTriggerCompletion(ITextView textView, SnapshotPoint triggerLocation,
             CompletionTrigger trigger, char? typedChar)
         {
-            if (!AICodePackage.Instance.Settings.EnableInlineCompletion)
+            if (AICodePackage.Instance == null || !AICodePackage.Instance.Settings.EnableInlineCompletion)
                 return false;
 
             // 只在特定触发字符时触发
@@ -134,12 +163,28 @@ namespace AICode.Vsix
                 return false;
 
             // 只在C++和C#文件中触发
-            var document = triggerLocation.Snapshot.TextBuffer.GetRelatedDocuments().FirstOrDefault();
+            var document = triggerLocation.Snapshot.TextBuffer.Properties
+                .GetProperty(typeof(ITextDocument)) as ITextDocument;
             if (document == null)
                 return false;
 
-            string contentType = document.ContentType.TypeName.ToLower();
-            return contentType == "c/c++" || contentType == "csharp";
+            string language = GetLanguageFromFilePath(document.FilePath);
+            return language == "cpp" || language == "csharp";
+        }
+
+        private string GetLanguageFromFilePath(string filePath)
+        {
+            if (filePath.EndsWith(".cpp", StringComparison.OrdinalIgnoreCase) ||
+                filePath.EndsWith(".h", StringComparison.OrdinalIgnoreCase) ||
+                filePath.EndsWith(".hpp", StringComparison.OrdinalIgnoreCase))
+            {
+                return "cpp";
+            }
+            else if (filePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+            {
+                return "csharp";
+            }
+            return "unknown";
         }
     }
 

@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.Shell;
 
 namespace AICode.Vsix
 {
-    [Guid("1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p")]
+    [Guid("1A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D")]
     public class AICodeToolWindow : ToolWindowPane
     {
         private readonly AICodeToolWindowControl _control;

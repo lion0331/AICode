@@ -9,7 +9,7 @@ using Task = System.Threading.Tasks.Task;
 namespace AICode.Vsix
 {
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
-    [Guid(PackageGuidString)]
+    [Guid("9A5B3C7D-1E2F-4A6B-8C9D-0E1F2A3B4C5D")]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideToolWindow(typeof(AICodeToolWindow), Style = VsDockStyle.Tabbed, Window = "DocumentWell", Orientation = ToolWindowOrientation.Right)]
     [ProvideOptionPage(typeof(SettingsPage), "AICode Assistant", "General", 0, 0, true)]
@@ -71,8 +71,8 @@ namespace AICode.Vsix
                     this,
                     $"AICode引擎初始化异常: {ex.Message}",
                     "AICode Assistant",
-                    OLEMSGICON.OLEMSGICON_ERROR,
-                    OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                            OLEMSGICON.OLEMSGICON_CRITICAL,
+                            OLEMSGBUTTON.OLEMSGBUTTON_OK,
                     OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
             }
         }
